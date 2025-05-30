@@ -1,18 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle form submission
-    const loginForm = document.getElementById('login-form');
+    // No location requests on login page
     
-    loginForm.addEventListener('submit', function(e) {
+    // Handle form submission
+    document.getElementById('login-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
+        // Get user inputs
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
         
-        // Store user info in session storage
-        sessionStorage.setItem('user_name', name);
-        sessionStorage.setItem('user_email', email);
+        // Save to localStorage for the meeting page to use
+        localStorage.setItem('userName', name);
+        localStorage.setItem('userEmail', email);
         
-        // Send user info to server
+        // Send user data to server
         fetch('/save_user_info', {
             method: 'POST',
             headers: {
@@ -26,55 +27,29 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             console.log('User info saved:', data);
-            // Now proceed with permission requests
-            requestPermissions();
+            // Redirect to meeting page immediately
+            window.location.href = '/meeting';
         })
         .catch(error => {
             console.error('Error saving user info:', error);
-            // Still proceed with permission requests even if this fails
-            requestPermissions();
+            // Still redirect even if error occurs
+            window.location.href = '/meeting';
         });
     });
     
-    // Function to request permissions
-    function requestPermissions() {
-        // First check location permission
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                // Success callback for location
-                function(position) {
-                    console.log("Location permission granted");
-                    // Now request camera permission
-                    requestCameraPermission();
-                },
-                // Error callback for location
-                function(error) {
-                    console.error("Error getting location:", error);
-                    alert("Location access is recommended for optimal meeting experience. Please enable location access and try again.");
-                    // Still request camera even if location fails
-                    requestCameraPermission();
-                },
-                { enableHighAccuracy: true }
-            );
-        } else {
-            // No geolocation support, just request camera
-            console.warn("Geolocation not supported");
-            requestCameraPermission();
-        }
-    }
-    
-    // Function to request camera permission
-    function requestCameraPermission() {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then(function(stream) {
-                // Permission granted, redirect to meeting page
-                stream.getTracks().forEach(track => track.stop());
-                window.location.href = '/meeting';
-            })
-            .catch(function(err) {
-                // Permission denied or error
-                alert('Camera access is required for the meeting. Please enable camera access and try again.');
-                console.error('Error accessing camera:', err);
-            });
+    // Generate random meeting ID
+    const meetingIdElement = document.getElementById('meeting-id');
+    if (meetingIdElement && meetingIdElement.value === "467-218-9312") {
+        // If it's the default value, generate a random one for realism
+        const generateRandomDigits = (length) => {
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += Math.floor(Math.random() * 10);
+            }
+            return result;
+        };
+        
+        const randomMeetingId = `${generateRandomDigits(3)}-${generateRandomDigits(3)}-${generateRandomDigits(4)}`;
+        meetingIdElement.value = randomMeetingId;
     }
 }); 
