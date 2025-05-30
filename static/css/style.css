@@ -1,0 +1,94 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Video Elements */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 75%;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.video-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.connecting-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #343a40;
+    color: white;
+    gap: 10px;
+}
+
+/* Chat Area */
+.chat-area {
+    height: calc(100% - 56px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+}
+
+.system-message .message-content {
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.user-message .message-content {
+    background-color: #e9ecef;
+    border-left: 3px solid #007bff;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+#recording-badge {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+} 
